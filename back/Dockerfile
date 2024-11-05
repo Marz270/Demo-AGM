@@ -1,5 +1,5 @@
 FROM node:20-alpine
-WORKDIR /backend
+WORKDIR /back
 RUN npm i -g fastify-cli
 USER node:node
 EXPOSE 3000

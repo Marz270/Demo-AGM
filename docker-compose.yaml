@@ -1,34 +1,38 @@
-name: caso2
+name: example
 services:
-  backend:
-    image: backend
-    container_name: backend
+  back:
+    image: back
+    container_name: back
     build:
-      context: ./backend
+      context: ./back
     command: sh -c "npm install && npm run dev"
     volumes:
-      - ./backend:/backend
+      - ./back:/back
     environment:
       - PGDATABASE=${PGDATABASE}
       - PGUSER=${PGUSER}
       - PGPASSWORD=${PGPASSWORD}
       - PGHOST=${PGHOST}
-  frontend:
-    image: nginx:alpine
-    container_name: frontend
-    volumes:
-      - ./frontend/:/usr/share/nginx/html
-  database:
-    image: database
-    container_name: database
+
+  front:
+    image: front
+    container_name: front
+    command: sh -c "npm install && npm start"
     build:
-      context: ./database
+      context: ./front
+    volumes:
+      - ./front/:/front
+
+  base:
+    image: base
+    container_name: base
+    build:
+      context: ./base
     environment:
       - POSTGRES_DB=${PGDATABASE}
       - POSTGRES_USER=${PGUSER}
       - POSTGRES_PASSWORD=${PGPASSWORD}
-    ports:
-      - 5432:5432
+
   proxy:
     image: nginx:alpine
     container_name: proxy
@@ -37,5 +41,7 @@ services:
     ports:
       - 80:80
     depends_on:
-      - frontend
-      - backend
+      - front
+      - back
+    environment:
+      - FRONTEND_PORT=${FRONTEND_PORT}
