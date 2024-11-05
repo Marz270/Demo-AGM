@@ -8,7 +8,9 @@ import { Feature } from 'ol';
 import { Point } from 'ol/geom';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
+import VectorTileLayer from 'ol/layer/VectorTile';
 import { Style, Icon } from 'ol/style';
+import { applyStyle } from 'ol-mapbox-style';
 
 @Component({
   selector: 'app-map',
@@ -23,7 +25,7 @@ export class MapComponent implements OnInit {
     this.initializeMap();
   }
 
-  private initializeMap(): void {
+  private async initializeMap(): Promise<void> {
     const tileLayer = new TileLayer({
       source: new OSM(),
     });
@@ -34,10 +36,16 @@ export class MapComponent implements OnInit {
       zoom: 10,
     });
 
-    // Crea el mapa
+    // Crea una capa vectorial vacía que se llenará con el estilo de Mapbox
+    const mapboxLayer = new VectorTileLayer();
+
+    // Aplica el estilo de Mapbox a la capa vectorial
+    await applyStyle(mapboxLayer, 'https://api.mapbox.com/styles/v1/mapbox/streets-v11?access_token=pk.eyJ1IjoibWFydGlnZGYiLCJhIjoiY20zNHM1a2FrMDJ6NTJrcHJqczljYXc5aCJ9.mWqbrFybjVe6OyoZBfaYZQ');
+    
+    // Crea el mapa con las capas OSM y Mapbox
     this.map = new Map({
       target: 'map',
-      layers: [tileLayer],
+      layers: [tileLayer, mapboxLayer],
       view: view,
     });
 
@@ -60,7 +68,7 @@ export class MapComponent implements OnInit {
         }),
       })
     );
-
+    
     // Capa vectorial para mostrar el punto
     const vectorSource = new VectorSource({
       features: [pointFeature],
