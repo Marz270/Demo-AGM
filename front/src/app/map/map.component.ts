@@ -28,9 +28,9 @@ export class MapComponent implements OnInit {
       source: new OSM(),
     });
 
-    // Configura la vista centrada en Londres
+    // Configura la vista centrada en Montevideo
     const view = new View({
-      center: fromLonLat([-0.1276, 51.5074]),
+      center: fromLonLat([-56.1645, -34.9011]),
       zoom: 10,
     });
 
@@ -41,8 +41,8 @@ export class MapComponent implements OnInit {
       view: view,
     });
 
-    // Agrega un punto en Londres
-    this.addPointGeometry([-0.1276, 51.5074]);
+    // Agrega un punto en Montevideo
+    this.addPointGeometry([-56.1645, -34.9011]);
   }
 
   private addPointGeometry(coordinates: [number, number]): void {
@@ -72,5 +72,6 @@ export class MapComponent implements OnInit {
 
     // Añade la capa vectorial al mapa
     this.map.addLayer(vectorLayer);
+    
   }
 }
