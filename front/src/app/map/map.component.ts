@@ -1,4 +1,3 @@
-// src/app/map/map.component.ts
 import { Component, OnInit } from '@angular/core';
 import Map from 'ol/Map';
 import View from 'ol/View';
@@ -25,14 +24,13 @@ export class MapComponent implements OnInit {
   }
 
   private initializeMap(): void {
-    // Configura la capa base de OpenStreetMap
     const tileLayer = new TileLayer({
       source: new OSM(),
     });
 
     // Configura la vista centrada en Londres
     const view = new View({
-      center: fromLonLat([-0.1276, 51.5074]), // Coordenadas de Londres en EPSG:4326
+      center: fromLonLat([-0.1276, 51.5074]),
       zoom: 10,
     });
 
@@ -44,7 +42,7 @@ export class MapComponent implements OnInit {
     });
 
     // Agrega un punto en Londres
-    this.addPointGeometry([-0.1276, 51.5074]); // Ejemplo de punto en Londres
+    this.addPointGeometry([-0.1276, 51.5074]);
   }
 
   private addPointGeometry(coordinates: [number, number]): void {
@@ -58,7 +56,7 @@ export class MapComponent implements OnInit {
       new Style({
         image: new Icon({
           anchor: [0.5, 1],
-          src: 'https://openlayers.org/en/v4.6.5/examples/data/icon.png', // Ícono personalizado
+          src: 'https://openlayers.org/en/v4.6.5/examples/data/icon.png',
         }),
       })
     );
