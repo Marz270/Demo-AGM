@@ -1,16 +1,13 @@
 import { Component, OnInit } from '@angular/core';
-import Map from 'ol/Map';
-import View from 'ol/View';
+import {View, Map, Feature} from 'ol';
 import TileLayer from 'ol/layer/Tile';
 import OSM from 'ol/source/OSM';
 import { fromLonLat } from 'ol/proj';
-import { Feature } from 'ol';
 import { Point } from 'ol/geom';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
-import VectorTileLayer from 'ol/layer/VectorTile';
 import { Style, Icon } from 'ol/style';
-import { applyStyle } from 'ol-mapbox-style';
+import {Modify, Draw} from 'ol/interaction';
 import { Punto } from '../interfaces/punto';
 
 @Component({
@@ -21,9 +18,14 @@ import { Punto } from '../interfaces/punto';
 })
 export class MapComponent implements OnInit {
   map!: Map;
+  draw!: Draw;
+  modify!: Modify;
+  vectorSource: VectorSource;
+  drawType: 'Point' | 'LineString' | 'Polygon' | 'Circle' = 'Point'; 
+  isDrawMode: boolean = true; 
 
   puntos: Punto[] = [
-    { latitud: -56.1645, longitud: -34.9011 }, // Punto central
+    { latitud: -56.1645, longitud: -34.9011 },
     { latitud: -56.1687, longitud: -34.892 },
     { latitud: -56.1601, longitud: -34.8897 },
     { latitud: -56.1663, longitud: -34.915 },
@@ -31,50 +33,46 @@ export class MapComponent implements OnInit {
     { latitud: -56.1582, longitud: -34.8842 },
   ];
 
-  ngOnInit(): void {
-    this.initializeMap();
+  constructor() {
+    this.vectorSource = new VectorSource();
   }
 
-  private async initializeMap(): Promise<void> {
+  ngOnInit(): void {
+    this.initializeMap();
+    this.addInteractions();
+  }
+
+  private initializeMap(): void {
     const tileLayer = new TileLayer({
       source: new OSM(),
     });
 
-    // Configura la vista centrada en Montevideo
     const view = new View({
       center: fromLonLat([-56.1645, -34.9011]),
       zoom: 13,
     });
 
-    // Crea una capa vectorial vacía que se llenará con el estilo de Mapbox
-    const mapboxLayer = new VectorTileLayer();
+    const vectorLayer = new VectorLayer({
+      source: this.vectorSource,
+    });
 
-    // Aplica el estilo de Mapbox a la capa vectorial
-    await applyStyle(
-      mapboxLayer,
-      'https://api.mapbox.com/styles/v1/mapbox/streets-v11?access_token=pk.eyJ1IjoibWFydGlnZGYiLCJhIjoiY20zNHM1a2FrMDJ6NTJrcHJqczljYXc5aCJ9.mWqbrFybjVe6OyoZBfaYZQ'
-    );
-
-    // Crea el mapa con las capas OSM y Mapbox
     this.map = new Map({
       target: 'map',
-      layers: [tileLayer, mapboxLayer],
+      layers: [tileLayer, vectorLayer],
       view: view,
     });
 
-    // Agrega un punto en Montevideo
     for (let punto of this.puntos) {
       this.addPointGeometry([punto.latitud, punto.longitud]);
     }
   }
 
+  // Agrega un punto/s al mapa
   private addPointGeometry(coordinates: [number, number]): void {
-    // Crea una característica de punto
     const pointFeature = new Feature({
       geometry: new Point(fromLonLat(coordinates)),
     });
 
-    // Estilo para el punto
     pointFeature.setStyle(
       new Style({
         image: new Icon({
@@ -84,16 +82,51 @@ export class MapComponent implements OnInit {
       })
     );
 
-    // Capa vectorial para mostrar el punto
-    const vectorSource = new VectorSource({
-      features: [pointFeature],
+    this.vectorSource.addFeature(pointFeature);
+  }
+
+  private addInteractions(): void {
+    // Inicializa la modificación
+    this.modify = new Modify({ source: this.vectorSource });
+    this.map.addInteraction(this.modify);
+    this.modify.setActive(false);
+
+    // Inicializa el dibujo
+    this.updateDrawInteraction();
+  }
+
+  private updateDrawInteraction(): void {
+    if (this.draw) {
+      this.map.removeInteraction(this.draw);
+    }
+
+    // Crea una nueva interacción de dibujo
+    this.draw = new Draw({
+      source: this.vectorSource,
+      type: this.drawType,
     });
 
-    const vectorLayer = new VectorLayer({
-      source: vectorSource,
-    });
+    // Añade la interacción al mapa
+    this.map.addInteraction(this.draw);
+    // Activa o desactiva la interacción de dibujo
+    this.draw.setActive(this.isDrawMode); 
+  }
 
-    // Añade la capa vectorial al mapa
-    this.map.addLayer(vectorLayer);
+  // cuando se cambia el tipo de dibujo
+  onDrawTypeChange(event: Event): void {
+    const selectedType = (event.target as HTMLSelectElement).value as 'Point' | 'LineString' | 'Polygon' | 'Circle';
+    this.drawType = selectedType;
+    this.updateDrawInteraction(); 
+  }
+
+  toggleMode(): void {
+    this.isDrawMode = !this.isDrawMode;
+    this.draw.setActive(this.isDrawMode);
+    this.modify.setActive(!this.isDrawMode);
+  }
+
+  // Resetea el mapa 
+  resetMap(): void {
+    this.vectorSource.clear(); 
   }
 }

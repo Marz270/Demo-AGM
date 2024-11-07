@@ -1,2 +1,18 @@
-<p>map works!</p>
-<div id="map" class="map-container"></div>
+<div style="display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: column;">
+    <div id="map" style="width: 80%; height: 500px;"></div>
+    
+    <!--  Dibujar/Modificar y Resetear -->
+    <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 10px;">
+      <label for="drawType" >Elige un formato para dibujar:</label>
+      <select id="drawType" (change)="onDrawTypeChange($event)" style="margin: 5px 0; padding: 8px 12px;">
+        <option value="Point">Punto</option>
+        <option value="LineString">LineString</option>
+        <option value="Polygon">Poligono</option>
+        <option value="Circle" selected>Circulo</option>
+      </select>
+      <button (click)="toggleMode()" style="margin: 5px 0; padding: 8px 12px;">
+        {{ isDrawMode ? 'Cambiar al modo Modificar' : 'Cambiar al modo Dibujar' }}
+      </button>
+      <button (click)="resetMap()" style="margin: 5px 0; padding: 8px 12px;">Resetear mapa</button>
+    </div>
+</div>
